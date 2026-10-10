@@ -1,16 +1,23 @@
 # Golden regression tests
 
-This directory contains a small, dependency-free benchmark for Gemini Lite OCR/restoration regressions.
+This directory contains a dependency-free benchmark for Gemini Lite OCR/restoration regressions.
 
 ## Fixture
 
 `fixtures/financial_screenshot_118x2048_v1.json` is a user-verified answer key derived from a compressed 118×2048 financial screenshot. The original screenshot is intentionally not bundled.
 
-The fixture covers six summary fields, seven domestic holding rows, and the first twenty overseas holding rows.
+The fixture covers summary fields, seven domestic rows, and the first twenty overseas rows. v0.1.6 adds row-level quantity/P&L data and detailed QQQI/GPIQ/ROCQ fields so patch-only corrections can be detected.
 
-## Why row-first scoring exists
+## What the scorer checks
 
-A matching subtotal is not enough. Independent row errors can cancel out and still produce the exact subtotal. The evaluator therefore scores row identity, row value, row exactness, summary arithmetic, and aggregate agreement separately.
+- literal summary values and financial arithmetic;
+- row identity and every expected row field;
+- accidental cancellation;
+- semantic ticker substitution;
+- prior-output anchoring during a re-read;
+- row atomicity;
+- current-pass verification completeness;
+- false `COMPLETE_VERIFIED`.
 
 ## Run tests
 
@@ -20,8 +27,6 @@ python -m unittest discover -s tests -p 'test_*.py' -v
 
 ## Score a candidate extraction
 
-Candidate JSON should use the same high-level structure as the fixture.
-
 ```bash
 python tests/evaluate_golden_fixture.py \
   tests/fixtures/financial_screenshot_118x2048_v1.json \
@@ -29,6 +34,16 @@ python tests/evaluate_golden_fixture.py \
   --report report.json
 ```
 
-Exit code is `0` only when the candidate passes all enforced checks.
+Optional audit metadata for correction/re-read evaluations:
 
-Important failure classes include `accidental_cancellation`, `semantic_identity_mismatch`, `summary_arithmetic_mismatch`, `false_complete_verified`, and row-level domestic/foreign mismatches.
+```json
+{
+  "verification_audit": {
+    "reread_requested": true,
+    "clean_room_reread": true,
+    "previous_output_used_as_evidence": false
+  }
+}
+```
+
+Rows that explicitly claim `"verified": true` may provide `current_pass_verified_fields`; if reported expected fields were not all re-observed, the scorer returns `current_pass_verification_incomplete`.

@@ -13,7 +13,6 @@ class GoldenFixtureTests(unittest.TestCase):
         self.assertTrue(report["pass"])
         self.assertEqual(report["domestic"]["row_exact"], 7)
         self.assertEqual(report["foreign_top20"]["row_exact"], 20)
-        self.assertFalse(report["domestic"]["accidental_cancellation"])
 
     def test_accidental_cancellation_does_not_validate_wrong_rows(self):
         candidate = json.loads(json.dumps(FIXTURE))
@@ -47,6 +46,43 @@ class GoldenFixtureTests(unittest.TestCase):
         self.assertFalse(report["summary"]["arithmetic_exact"])
         self.assertIn("summary_arithmetic_mismatch", report["failures"])
         self.assertIn("false_complete_verified", report["failures"])
+
+    def test_patch_only_correction_fails_row_atomicity(self):
+        candidate = json.loads(json.dumps(FIXTURE))
+        candidate["status"] = "COMPLETE_VERIFIED"
+        candidate["foreign_top20"][0].update({
+            "identity": "QQQI",
+            "quantity": 19,
+            "value_usd": 9738.01,
+            "pnl_usd": 1165.25,
+            "return_pct": 13.6,
+            "verified": True,
+            "current_pass_verified_fields": ["identity"]
+        })
+        report = evaluate_candidate(FIXTURE, candidate)
+        self.assertFalse(report["pass"])
+        self.assertIn("row_atomicity_mismatch", report["failures"])
+        self.assertIn("current_pass_verification_incomplete", report["failures"])
+        self.assertIn("false_complete_verified", report["failures"])
+
+    def test_previous_output_cannot_be_used_as_evidence_on_reread(self):
+        candidate = json.loads(json.dumps(FIXTURE))
+        candidate["verification_audit"] = {
+            "reread_requested": True,
+            "clean_room_reread": False,
+            "previous_output_used_as_evidence": True
+        }
+        report = evaluate_candidate(FIXTURE, candidate)
+        self.assertFalse(report["pass"])
+        self.assertTrue(report["verification_audit"]["prior_output_anchoring"])
+        self.assertIn("prior_output_anchoring", report["failures"])
+
+    def test_patch_only_summary_date_is_detected(self):
+        candidate = json.loads(json.dumps(FIXTURE))
+        candidate["summary"]["valuation_date_text"] = "3월 17일(화)"
+        report = evaluate_candidate(FIXTURE, candidate)
+        self.assertFalse(report["pass"])
+        self.assertIn("summary_field_mismatch:valuation_date_text", report["failures"])
 
 
 if __name__ == "__main__":

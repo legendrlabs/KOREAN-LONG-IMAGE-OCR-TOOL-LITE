@@ -5,11 +5,17 @@ from pathlib import Path
 from typing import Any
 
 
-def _money_equal(a: Any, b: Any, places: int = 2) -> bool:
+def _numeric_equal(a: Any, b: Any, places: int = 2) -> bool:
     try:
         return round(float(a), places) == round(float(b), places)
     except (TypeError, ValueError):
         return False
+
+
+def _field_equal(a: Any, b: Any) -> bool:
+    if isinstance(b, (int, float)) and not isinstance(b, bool):
+        return _numeric_equal(a, b)
+    return a == b
 
 
 def _score_rows(expected, actual, value_key):
@@ -18,27 +24,37 @@ def _score_rows(expected, actual, value_key):
     value_exact = 0
     row_exact = 0
     mismatches = []
+    current_pass_incomplete_rows = []
+
     for i in range(n):
         exp = expected[i]
         got = actual[i] if i < len(actual) else {}
-        ident_ok = got.get("identity") == exp.get("identity")
-        value_ok = _money_equal(got.get(value_key), exp.get(value_key))
+        field_results = {key: _field_equal(got.get(key), value) for key, value in exp.items()}
+        ident_ok = field_results.get("identity", False)
+        value_ok = field_results.get(value_key, False)
+        row_ok = all(field_results.values())
         identity_exact += int(ident_ok)
         value_exact += int(value_ok)
-        row_exact += int(ident_ok and value_ok)
-        if not (ident_ok and value_ok):
+        row_exact += int(row_ok)
+
+        if got.get("verified") is True:
+            current_fields = set(got.get("current_pass_verified_fields", []))
+            required_fields = set(exp.keys())
+            if not required_fields.issubset(current_fields):
+                current_pass_incomplete_rows.append(i + 1)
+
+        if not row_ok:
             mismatches.append({
                 "row": i + 1,
-                "expected_identity": exp.get("identity"),
-                "actual_identity": got.get("identity"),
-                "expected_value": exp.get(value_key),
-                "actual_value": got.get(value_key),
-                "identity_exact": ident_ok,
-                "value_exact": value_ok,
+                "expected": exp,
+                "actual": {key: got.get(key) for key in exp.keys()},
+                "field_exact": field_results,
             })
+
     if len(actual) > n:
         for i in range(n, len(actual)):
             mismatches.append({"row": i + 1, "unexpected_row": actual[i]})
+
     return {
         "expected_rows": n,
         "actual_rows": len(actual),
@@ -46,6 +62,7 @@ def _score_rows(expected, actual, value_key):
         "value_exact": value_exact,
         "row_exact": row_exact,
         "mismatches": mismatches,
+        "current_pass_incomplete_rows": current_pass_incomplete_rows,
     }
 
 
@@ -57,7 +74,7 @@ def evaluate_candidate(fixture: dict, candidate: dict) -> dict:
     summary_fields = {}
     for key, expected in expected_summary.items():
         actual = actual_summary.get(key)
-        exact = _money_equal(actual, expected)
+        exact = _field_equal(actual, expected)
         summary_fields[key] = {"expected": expected, "actual": actual, "exact": exact}
         if not exact:
             failures.append(f"summary_field_mismatch:{key}")
@@ -73,11 +90,22 @@ def evaluate_candidate(fixture: dict, candidate: dict) -> dict:
     if not arithmetic_exact:
         failures.append("summary_arithmetic_mismatch")
 
+    audit = candidate.get("verification_audit", {})
+    prior_output_anchoring = bool(
+        audit.get("reread_requested")
+        and (
+            audit.get("previous_output_used_as_evidence")
+            or audit.get("clean_room_reread") is False
+        )
+    )
+    if prior_output_anchoring:
+        failures.append("prior_output_anchoring")
+
     domestic = _score_rows(fixture["domestic"], candidate.get("domestic", []), "value_krw")
     domestic_sum = sum(float(r.get("value_krw", 0) or 0) for r in candidate.get("domestic", []))
     domestic["candidate_subtotal"] = domestic_sum
     domestic["expected_subtotal"] = float(expected_summary["domestic_total_krw"])
-    domestic["subtotal_exact"] = _money_equal(domestic_sum, expected_summary["domestic_total_krw"], 0)
+    domestic["subtotal_exact"] = _numeric_equal(domestic_sum, expected_summary["domestic_total_krw"], 0)
     domestic["accidental_cancellation"] = (
         domestic["subtotal_exact"] and domestic["row_exact"] != domestic["expected_rows"]
     )
@@ -85,12 +113,17 @@ def evaluate_candidate(fixture: dict, candidate: dict) -> dict:
         failures.append("domestic_row_mismatch")
     if domestic["accidental_cancellation"]:
         failures.append("accidental_cancellation")
+    if domestic["current_pass_incomplete_rows"]:
+        failures.append("current_pass_verification_incomplete")
 
     foreign = _score_rows(fixture["foreign_top20"], candidate.get("foreign_top20", []), "value_usd")
     if foreign["identity_exact"] != foreign["expected_rows"]:
         failures.append("semantic_identity_mismatch")
     if foreign["row_exact"] != foreign["expected_rows"] or foreign["actual_rows"] != foreign["expected_rows"]:
         failures.append("foreign_row_mismatch")
+        failures.append("row_atomicity_mismatch")
+    if foreign["current_pass_incomplete_rows"]:
+        failures.append("current_pass_verification_incomplete")
 
     if candidate.get("status") == "COMPLETE_VERIFIED" and failures:
         failures.append("false_complete_verified")
@@ -101,6 +134,9 @@ def evaluate_candidate(fixture: dict, candidate: dict) -> dict:
         "summary": {
             "fields": summary_fields,
             "arithmetic_exact": arithmetic_exact,
+        },
+        "verification_audit": {
+            "prior_output_anchoring": prior_output_anchoring,
         },
         "domestic": domestic,
         "foreign_top20": foreign,
