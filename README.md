@@ -4,6 +4,8 @@
 
 이 저장소는 같은 목적을 가진 두 개의 모델별 Lite 스킬을 제공합니다.
 
+> 설치 방법은 [`INSTALL.md`](./INSTALL.md)를 참고하세요.
+
 ## Included skills
 
 | Variant | Path | Focus |
@@ -48,6 +50,7 @@ Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오�
 ```text
 KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 ├─ README.md
+├─ INSTALL.md
 ├─ long-image-ocr-gpt-lite/
 │  └─ SKILL.md
 └─ long-image-ocr-gemini-lite/
