@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project uses semantic versioning where practical.
 
+## [0.1.5] - 2026-10-11
+
+### Added
+
+- **Row-First Validation**: detailed rows must be verified before aggregate/subtotal reconciliation.
+- **Accidental Cancellation Guard**: a matching subtotal no longer upgrades incorrect or uncertain rows when row errors cancel numerically.
+- Golden regression fixture `tests/fixtures/financial_screenshot_118x2048_v1.json` based on a user-verified 118×2048 financial screenshot answer key.
+- Dependency-free evaluator `tests/evaluate_golden_fixture.py` and four regression tests covering perfect output, accidental cancellation, semantic ticker substitution, and false `COMPLETE_VERIFIED` under arithmetic mismatch.
+- `tests/README.md` with candidate schema and benchmark commands.
+
+### Changed
+
+- Aggregate agreement is now explicitly secondary evidence; validation order is row identity/value/association → row confidence → aggregate calculation → displayed subtotal cross-check.
+- Completion status now accounts for unresolved row-level mismatches and possible accidental cancellation.
+- Gemini regression checks now include verified domestic rows and the cancellation case where wrong rows still sum to `7,582,477`.
+
+### Fixed
+
+- Prevented a correct subtotal from being treated as proof that every underlying OCR row is correct.
+- Prevented low-confidence rows from being upgraded merely because their numeric errors cancel at the aggregate level.
+
+### Distribution
+
+- Updated all Gemini Markdown skill paths to the v0.1.5 row-first rules.
+- Added `dist/long-image-ocr-gemini-lite-v0.1.5.skill`.
+- Kept GPT/ChatGPT Work skill and the v0.1.1 GPT plugin ZIP unchanged.
+
 ## [0.1.4] - 2026-10-11
 
 ### Added
