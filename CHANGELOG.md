@@ -12,9 +12,10 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Canonical portable skill layout under `skills/`:
   - `skills/long-image-ocr-gpt-lite/SKILL.md`
   - `skills/long-image-ocr-gemini-lite/SKILL.md`
+- Repo marketplace at `.agents/plugins/marketplace.json` for supported ChatGPT Desktop/Codex marketplace flows.
 - Prebuilt ChatGPT/Codex skill-only plugin archive: `dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip`.
 - Prebuilt Gemini CLI skill package: `dist/long-image-ocr-gemini-lite-v0.1.1.skill`.
-- Installation guidance that clearly separates ChatGPT plugin upload, ChatGPT Skills upload, Codex, and Gemini CLI flows.
+- Installation guidance that clearly separates ChatGPT plugin upload, ChatGPT Skills upload, GitHub marketplace, Codex skill-only, and Gemini CLI flows.
 
 ### Changed
 
@@ -25,7 +26,7 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 ### Fixed
 
 - Reduced the chance that hosts misinterpret the repository as a local OCR application requiring `GEMINI_API_KEY`, EasyOCR, custom servers, or separate OCR scripts.
-- Added direct package artifacts so eligible ChatGPT/plugin environments do not need to manually reconstruct the package structure before upload.
+- Added direct package artifacts so eligible ChatGPT/plugin and Gemini CLI environments do not need to manually reconstruct package structure before installation.
 
 ## [0.1.0] - 2026-10-11
 
