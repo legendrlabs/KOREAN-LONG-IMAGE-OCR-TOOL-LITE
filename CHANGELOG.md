@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project uses semantic versioning where practical.
 
+## [0.1.6] - 2026-10-11
+
+### Added
+
+- **Clean-room Re-read**: correction/re-validation requests must re-read the requested scope from source pixels instead of patching prior OCR output.
+- **Row Atomicity Lock**: when any field in a structured row is corrected or re-read, every reported field in that row must be re-observed in the current visual pass.
+- **Current-pass Verification**: `VERIFIED` status may not be inherited from a previous answer or from a partially corrected row.
+- Golden fixture coverage for `valuation_date_text`, domestic quantities/P&L, and QQQI/GPIQ/ROCQ quantity/P&L/return fields.
+- Regression detection for `prior_output_anchoring`, `row_atomicity_mismatch`, and `current_pass_verification_incomplete`.
+
+### Changed
+
+- The golden evaluator now scores all expected row fields, not only identity and valuation.
+- String summary fields are compared literally while numeric fields retain numeric comparison.
+- Re-read audit metadata can explicitly flag use of previous OCR output as evidence.
+
+### Fixed
+
+- Prevented patch-only correction such as `QQQ → QQQI` while stale quantity/P&L/return values remain untouched.
+- Prevented a row from being called verified when only one corrected field was observed in the current pass.
+- Prevented prior OCR output from acting as an implicit source ledger during correction.
+
+### Distribution
+
+- Updated all Gemini Markdown skill paths to v0.1.6.
+- Added `dist/long-image-ocr-gemini-lite-v0.1.6.skill`.
+- Kept GPT/ChatGPT Work skill and v0.1.1 GPT plugin ZIP unchanged.
+
 ## [0.1.5] - 2026-10-11
 
 ### Added
