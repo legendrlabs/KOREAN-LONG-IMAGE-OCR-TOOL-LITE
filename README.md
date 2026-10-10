@@ -6,10 +6,10 @@
 
 한국어 장문 스크린샷·다중 이미지 OCR/복원 작업을 위한 경량 Agent Skill 배포판입니다.
 
-**Current repository version: v0.1.3**
+**Current repository version: v0.1.4**
 
 - [설치 가이드](./INSTALL.md)
-- [v0.1.3 릴리스 노트](./RELEASE_NOTES_v0.1.3.md)
+- [v0.1.4 릴리스 노트](./RELEASE_NOTES_v0.1.4.md)
 - [변경 이력](./CHANGELOG.md)
 - [MIT License](./LICENSE)
 
@@ -37,8 +37,6 @@ long-image-ocr-gemini-lite
 dist/GEMINI_INSTALL_PROMPT.txt
 ```
 
-현재 호스트가 영구 스킬 등록 기능을 제공하지 않으면, Markdown을 현재 대화에 로드해 사용할 수는 있어도 영구 설치했다고 표현하면 안 됩니다.
-
 ### Gemini CLI fallback
 
 ```bash
@@ -48,18 +46,14 @@ gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-
 또는 current `.skill` package:
 
 ```text
-dist/long-image-ocr-gemini-lite-v0.1.3.skill
+dist/long-image-ocr-gemini-lite-v0.1.4.skill
 ```
 
-설치 후 실행 중인 Gemini CLI 세션에서는:
-
-```text
-/skills reload
-```
+설치 후 실행 중인 Gemini CLI 세션에서는 `/skills reload` 후 `/skills list`로 확인합니다.
 
 ### ChatGPT / Codex — GPT Lite
 
-GPT 경로는 **v0.1.1과 동일하게 유지**합니다. 현재 ChatGPT Work 테스트 운용 중인 GPT skill 본문과 plugin package는 v0.1.3에서 변경하지 않습니다.
+GPT 경로는 **v0.1.1과 동일하게 유지**합니다. 현재 ChatGPT Work 테스트 운용 중인 GPT skill 본문과 plugin package는 v0.1.4에서 변경하지 않습니다.
 
 ```text
 dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
@@ -78,41 +72,51 @@ codex plugin marketplace list
 | Variant | Canonical path | Focus |
 |---|---|---|
 | GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 소배치, 숫자 진행률, 체크포인트, 중단 후 재개 |
-| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | native vision, source modality/coverage, 7-phase OCR workflow, anti-fabrication, structured-output validation |
+| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | native vision, source modality/coverage, literal identity lock, arithmetic verification, anti-fabrication |
 
-## Gemini Lite v0.1.3 highlights
+## Gemini Lite v0.1.4 highlights
 
-Gemini Lite는 이제 **instruction-only, evidence-only native-vision protocol**로 명시됩니다.
+v0.1.4는 실제 금융 스크린샷 회귀테스트에서 확인된 두 종류의 오류를 직접 차단합니다.
 
-핵심 규칙:
+### 1. Literal Identity Lock
 
-- 외부 OCR/Python/MCP/API/Cloud Run/로컬 실행기/`GEMINI_API_KEY` 앱으로 재해석 금지
-- image pixels와 Drive/workspace indexed text를 구분
-- `DIRECT_PIXEL_VERIFIED / TEXT_INDEX_ONLY / METADATA_ONLY / UNAVAILABLE` per-source 상태 유지
-- 모든 접근 가능한 source를 확인하기 전 완료 선언 금지
-- 반복 패턴이나 계좌 합계로 누락 상세행 생성 금지
-- 화면 표시값을 계산값으로 덮어쓰기 금지
-- 7-phase workflow:
-  1. Layout reconnaissance
-  2. Segmented reading
-  3. Boundary reconciliation
-  4. Precision pass
-  5. Low-confidence pass
-  6. Reconstruction
-  7. Audit
-- CSV quoting / spreadsheet cell boundary / formula-reference 검증
-- 합계는 final structured rows에서 재계산하고 include/exclude 기준을 명시
-- 검증은 결과물이 아니라 gate이며, 검증 후 사용자가 요청한 실제 결과물까지 계속 생성
+티커·회사명·상품명·계정명·식별자 같은 고유명사는 **보이는 글리프를 그대로 전사**합니다.
+
+금지 예:
+
+```text
+QQQI → QQQ
+GPIQ → UPRO
+ROCQ → RDVY
+```
+
+도메인 지식은 재검토 신호로만 사용할 수 있고, 원문을 더 익숙한 이름으로 교체하는 근거가 될 수 없습니다. 흐리면 `AMBIGUOUS` 또는 `UNREADABLE`로 남깁니다.
+
+### 2. Arithmetic Consistency Gate
+
+화면에 산술적으로 연결된 값이 함께 표시되면 실제로 검산합니다.
+
+예:
+
+```text
+62,966,337 - 65,578,190 = -2,611,853
+```
+
+불일치하면 재판독 또는 불확실성 표시가 필요하며, 근거 없이 `수수료`, `제비용`, `반올림`, `환율`, `결제시차` 등으로 합리화하면 안 됩니다.
+
+### 3. Confidence follows evidence
+
+흐릿한 ticker/name을 문맥상 그럴듯하다는 이유로 `양호`, high-confidence, verified로 표시할 수 없습니다.
 
 ## Core guarantees
 
-두 배포판 모두 다음 원칙을 공유합니다.
-
-1. 원본 이미지 픽셀을 직접 확인하지 않았으면 시각 검증했다고 주장하지 않습니다.
-2. 종목/행/항목 상세를 모르면 계좌 합계나 요약값으로 상세 데이터를 만들어내지 않습니다.
-3. 화면에 표시된 수치와 계산·추정 수치를 구분합니다.
-4. 일부만 검증한 결과를 전체 완료라고 표현하지 않습니다.
-5. 집계값을 그대로 복사한 뒤 다시 비교하는 순환 검산을 인정하지 않습니다.
+1. 픽셀을 직접 확인하지 않았으면 시각 검증했다고 주장하지 않습니다.
+2. 합계·반복 패턴으로 누락 상세행을 만들어내지 않습니다.
+3. 화면 표시값과 계산값을 분리합니다.
+4. 일부만 검증하고 전체 완료라고 말하지 않습니다.
+5. 순환 검산을 인정하지 않습니다.
+6. 고유명사를 익숙한 티커/회사명으로 자동 교정하지 않습니다.
+7. 산술 불일치를 근거 없는 비용/반올림 이야기로 설명하지 않습니다.
 
 ## Distribution layout
 
@@ -129,6 +133,7 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 │  ├─ LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
 │  ├─ long-image-ocr-gemini-lite-v0.1.1.skill
 │  ├─ long-image-ocr-gemini-lite-v0.1.3.skill
+│  ├─ long-image-ocr-gemini-lite-v0.1.4.skill
 │  ├─ long-image-ocr-gemini-lite.md
 │  └─ GEMINI_INSTALL_PROMPT.txt
 ├─ README.md
@@ -139,7 +144,8 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 ├─ RELEASE_NOTES_v0.1.0.md
 ├─ RELEASE_NOTES_v0.1.1.md
 ├─ RELEASE_NOTES_v0.1.2.md
-└─ RELEASE_NOTES_v0.1.3.md
+├─ RELEASE_NOTES_v0.1.3.md
+└─ RELEASE_NOTES_v0.1.4.md
 ```
 
 Legacy top-level skill folders remain for v0.1.x compatibility and are kept in sync with the canonical Gemini skill.
@@ -156,23 +162,17 @@ Gemini Lite uses `COMPLETE_VERIFIED / PARTIAL_VERIFIED / DATA_HOLD` for final ta
 
 ## What this repository is not
 
-이 저장소는 다음을 제공하지 않습니다.
-
-- 자체 OCR 엔진
-- Gemini/OpenAI API 호출 애플리케이션
-- EasyOCR/Tesseract 설치 프로그램
-- 이미지 자동 분할 실행기
-- 백그라운드 서버
+이 저장소는 자체 OCR 엔진, Gemini/OpenAI API 앱, EasyOCR/Tesseract 설치 프로그램, 이미지 자동 분할 실행기, 백그라운드 서버를 제공하지 않습니다.
 
 실제 이미지 접근, OCR/vision 성능, Drive 원본 접근 가능 여부는 설치되는 호스트와 그 호스트가 노출하는 도구 경로에 따라 달라집니다.
 
 ## Version
 
-**v0.1.3 — Gemini native-vision workflow merge**
+**v0.1.4 — Gemini literal-identity and arithmetic-consistency hardening**
 
 GPT skill/package remains unchanged from v0.1.1 while GPT testing continues.
 
-See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.3.md`](./RELEASE_NOTES_v0.1.3.md).
+See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.4.md`](./RELEASE_NOTES_v0.1.4.md).
 
 ## License
 
