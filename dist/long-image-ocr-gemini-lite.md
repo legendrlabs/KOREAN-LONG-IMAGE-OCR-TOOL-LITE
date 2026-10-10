@@ -27,6 +27,7 @@ Every extracted character, number, date, transaction, product, row, field, or re
 8. **Verification is a gate, not the deliverable.** After verification, continue to the requested table, ledger, spreadsheet, transcription, or other output.
 9. **Literal identity is locked.** Proper nouns and identifiers must be transcribed from visible glyphs, not replaced by more familiar domain entities.
 10. **Arithmetic mismatch is a verification failure signal.** Reinspect before finalizing; do not explain it away without explicit source evidence.
+11. **Row correctness comes before aggregate agreement.** A matching subtotal cannot validate incorrect, uncertain, shifted, or fabricated rows.
 
 ## 1. Source modality gate
 
@@ -169,7 +170,7 @@ Treat tiny text, blur, compression, low contrast, clipping, overlays, and look-a
 Reassemble only source-supported information. Preserve order, chronology, relationships, grouping, and legitimate repetition. Never invent data for completeness.
 
 ### Phase 7 — Audit
-Check source coverage, overlap duplicates, missing rows, numeric transcription, row/column shifts, literal identities, uncertainty, traceability, arithmetic consistency, aggregate reconciliation, and spreadsheet/formula errors when applicable.
+Check source coverage, overlap duplicates, missing rows, numeric transcription, row/column shifts, literal identities, row-level correctness, uncertainty, traceability, arithmetic consistency, aggregate reconciliation, and spreadsheet/formula errors when applicable.
 
 ## 8. Structured output safety
 
@@ -184,7 +185,46 @@ For tables, ledgers, CSV, and spreadsheets:
 - scan for `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, `#N/A`;
 - check wrong-row/cross-row formula references.
 
-## 9. Arithmetic Consistency Gate
+## 9. Row-First Validation and Accidental Cancellation Guard
+
+Validate detailed rows **before** using any aggregate or subtotal as supporting evidence.
+
+For each row, independently verify the fields that matter to the task, including when present:
+
+- row identity/name/ticker;
+- numeric value/amount;
+- quantity/price/currency;
+- row order and row-to-value association;
+- confidence/ambiguity state.
+
+Only after row-level checks are complete may totals or subtotals be used as a **secondary cross-check**.
+
+A correct aggregate does **not** prove the rows are correct. Independent row errors can cancel each other and produce the exact displayed subtotal.
+
+### Accidental cancellation guard
+
+If:
+
+`SUM(extracted rows) == displayed subtotal`
+
+but one or more rows remain incorrect, uncertain, shifted, or unresolved:
+
+- do not upgrade those rows to verified;
+- do not describe the aggregate match as proof of OCR correctness;
+- flag the result as possible `ACCIDENTAL_CANCELLATION` when useful for audit/reporting;
+- keep the task `PARTIAL_VERIFIED` or `DATA_HOLD` when the unresolved row errors are material.
+
+Never increase row confidence merely because the final sum matches.
+
+**Validation order:**
+
+`row identity/value/association → row confidence → aggregate calculation → displayed subtotal cross-check`
+
+not:
+
+`subtotal matches → therefore rows are correct`.
+
+## 10. Arithmetic Consistency Gate
 
 When a screen displays fields with an explicit arithmetic relationship, use that relationship as an independent verification check.
 
@@ -222,23 +262,27 @@ A plausible explanation is not validation.
 
 Do not change source values merely to force the arithmetic to match; reinspect first and preserve uncertainty when unresolved.
 
-## 10. Summary and independent validation
+## 11. Summary and independent validation
 
-Recompute every summary, total, count, monthly rollup, or yearly rollup from the **final structured rows**.
+Recompute every summary, total, count, monthly rollup, or yearly rollup from the **final structured rows** after row-level validation.
 
 Make explicit include/exclude decisions for overlap duplicates, cancellations/reversals, funding/top-ups, free/zero-value rows, and other non-counted evidence.
 
 Valid:
 
-`SUM(actual extracted detail) ↔ displayed source subtotal`
+`verified row detail → SUM(actual extracted detail) ↔ displayed source subtotal`
 
 Invalid circular validation:
 
 copy displayed subtotal → synthetic row → sum same row → compare to original subtotal → declare success.
 
-Zero difference does not prove correctness when validation is circular.
+Invalid aggregate-first validation:
 
-## 11. Operating modes
+wrong/uncertain rows → errors cancel → subtotal matches → declare rows verified.
+
+Zero difference does not prove correctness when validation is circular or when row errors cancel.
+
+## 12. Operating modes
 
 ### Auto
 Default. Apply the full protocol for long, dense, repetitive, tabular, financial, or precision-sensitive sources.
@@ -249,7 +293,7 @@ Preserve visible wording/order. Do not silently autocorrect, normalize, or summa
 ### Structured extraction
 Verify every row independently, preserve associations, never move values between rows, never create missing rows, preserve genuine duplicates, and normalize only when requested.
 
-## 12. Completion gate
+## 13. Completion gate
 
 Final status must be exactly one of:
 
@@ -257,11 +301,11 @@ Final status must be exactly one of:
 - `PARTIAL_VERIFIED`
 - `DATA_HOLD`
 
-`COMPLETE_VERIFIED`: every source required for the requested result was verified at the necessary level, with no unresolved material arithmetic or identity conflicts.
+`COMPLETE_VERIFIED`: every source required for the requested result was verified at the necessary level, with no unresolved material row, arithmetic, or identity conflicts.
 
 `PARTIAL_VERIFIED`: some requested sources/details remain unverified or unrestored.
 
-`DATA_HOLD`: access, ambiguity, arithmetic inconsistency, identity uncertainty, or validation failure makes the result unsafe to use.
+`DATA_HOLD`: access, ambiguity, arithmetic inconsistency, identity uncertainty, row-level inconsistency, or validation failure makes the result unsafe to use.
 
 When relevant, report:
 
@@ -273,11 +317,13 @@ When relevant, report:
 - detail complete / missing
 - extracted rows/items
 - unresolved ambiguities
+- row-level mismatches
 - arithmetic mismatches still open
+- possible accidental cancellation
 
 If status is not `COMPLETE_VERIFIED`, do not say complete, fully restored, fully verified, audit complete, all data reconstructed, or nothing missing.
 
-## 13. Regression checks
+## 14. Regression checks
 
 A release must preserve these behaviors:
 
@@ -293,8 +339,18 @@ A release must preserve these behaviors:
 - **Financial arithmetic consistency:** if source reads assets `62,966,337`, principal `65,578,190`, and P&L `-2,611,853`, verify that `62,966,337 - 65,578,190 = -2,611,853`.
 - **Arithmetic contradiction:** a reading such as principal `65,379,190` with the same assets/P&L must trigger reinspection or uncertainty, not a “fees/expenses” explanation.
 - **Confidence discipline:** a blurry identity cannot be labeled “양호” merely because the chosen ticker/name is plausible.
+- **Accidental cancellation:** domestic row values `3,792,300 + 1,748,000 + 1,010,000 + 587,800 + 284,250 + 158,200 + 1,927` sum to `7,582,477`, but this aggregate match must **fail** row-level validation because multiple row values differ from the golden values.
+- **Golden domestic rows:** `삼성전자 3,787,500`, `SK하이닉스 1,745,000`, `LS ELECTRIC 1,010,000`, `리노공업 597,600`, `대양전기공업 284,250`, `풍산 156,200`, `애니플러스 1,927` must be evaluated row-by-row before subtotal reconciliation.
 
-## 14. Response behavior
+The repository golden fixture and scorer are:
+
+- `tests/fixtures/financial_screenshot_118x2048_v1.json`
+- `tests/evaluate_golden_fixture.py`
+- `tests/test_evaluate_golden_fixture.py`
+
+The fixture is an answer-key dataset only; the original screenshot is not bundled.
+
+## 15. Response behavior
 
 Apply the protocol silently unless methodology is requested. Return the requested result directly and state material source limitations when present.
 
@@ -306,6 +362,9 @@ Before delivery verify:
 - [ ] every accessible source was covered before completion claims;
 - [ ] proper nouns/identifiers obey Literal Identity Lock;
 - [ ] confidence labels match visible evidence;
+- [ ] every material structured row was validated independently before aggregate reconciliation;
+- [ ] a matching subtotal was not used to upgrade incorrect/uncertain rows;
+- [ ] possible accidental cancellation was considered when row errors coexist with a matching subtotal;
 - [ ] material arithmetic relationships were actually checked;
 - [ ] no arithmetic mismatch was explained away without source evidence;
 - [ ] validation is independent, not circular;

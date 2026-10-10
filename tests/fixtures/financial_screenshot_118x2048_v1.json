@@ -1,0 +1,45 @@
+{
+  "fixture_id": "financial-screenshot-118x2048-v1",
+  "source_type": "compressed-long-financial-screenshot",
+  "dimensions": "118x2048",
+  "ground_truth_basis": "user-verified answer key; screenshot itself is not bundled",
+  "summary": {
+    "total_assets_krw": 62966337,
+    "principal_krw": 65578190,
+    "pnl_krw": -2611853,
+    "domestic_total_krw": 7582477,
+    "overseas_total_usd": 40476.32,
+    "fx_rate_krw": 1368.30
+  },
+  "domestic": [
+    {"identity": "삼성전자", "value_krw": 3787500},
+    {"identity": "SK하이닉스", "value_krw": 1745000},
+    {"identity": "LS ELECTRIC", "value_krw": 1010000},
+    {"identity": "리노공업", "value_krw": 597600},
+    {"identity": "대양전기공업", "value_krw": 284250},
+    {"identity": "풍산", "value_krw": 156200},
+    {"identity": "애니플러스", "value_krw": 1927}
+  ],
+  "foreign_top20": [
+    {"identity": "QQQI", "value_usd": 9738.00},
+    {"identity": "GPIQ", "value_usd": 6222.70},
+    {"identity": "ROCQ", "value_usd": 6113.80},
+    {"identity": "VOO", "value_usd": 3505.15},
+    {"identity": "NVDA", "value_usd": 2496.32},
+    {"identity": "VFLO", "value_usd": 1178.76},
+    {"identity": "AVUV", "value_usd": 1103.13},
+    {"identity": "DRAM", "value_usd": 1040.04},
+    {"identity": "버티브", "value_usd": 965.96},
+    {"identity": "AMAT", "value_usd": 853.82},
+    {"identity": "GOOGL", "value_usd": 694.66},
+    {"identity": "심보틱", "value_usd": 669.15},
+    {"identity": "TQQQ", "value_usd": 607.17},
+    {"identity": "AVGO", "value_usd": 492.23},
+    {"identity": "SPYM", "value_usd": 358.20},
+    {"identity": "DLR", "value_usd": 288.99},
+    {"identity": "COPX", "value_usd": 259.83},
+    {"identity": "ANET", "value_usd": 246.97},
+    {"identity": "CRWD", "value_usd": 245.70},
+    {"identity": "NXP", "value_usd": 227.95}
+  ]
+}
