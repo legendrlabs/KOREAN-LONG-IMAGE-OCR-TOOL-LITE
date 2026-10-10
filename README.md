@@ -1,24 +1,73 @@
 # KOREAN LONG IMAGE OCR TOOL LITE
 
+> **AGENT SKILL / SKILL-ONLY PLUGIN PACKAGE — NOT AN OCR APPLICATION**
+>
+> 이 저장소는 OCR 실행 프로그램, API 래퍼, 이미지 슬라이서, 로컬 서버가 아닙니다. `GEMINI_API_KEY`, EasyOCR, Tesseract 또는 별도 OCR 스크립트를 요구하지 않습니다. 설치되는 호스트(ChatGPT/Codex/Gemini)가 제공하는 vision·file·connector 기능을 더 안전하고 일관되게 사용하도록 만드는 작업 프로토콜입니다.
+
 한국어 장문 스크린샷·다중 이미지 OCR/복원 작업을 위한 경량 Agent Skill 배포판입니다.
 
-**Current version: v0.1.0**
+**Current version: v0.1.1**
 
 - [설치 가이드](./INSTALL.md)
-- [v0.1.0 릴리스 노트](./RELEASE_NOTES_v0.1.0.md)
+- [v0.1.1 릴리스 노트](./RELEASE_NOTES_v0.1.1.md)
 - [변경 이력](./CHANGELOG.md)
 - [MIT License](./LICENSE)
 
-이 저장소는 같은 목적을 가진 두 개의 모델별 Lite 스킬을 제공합니다.
+## Quick install
+
+### ChatGPT / Codex — GPT Lite
+
+사전 패키징된 skill-only plugin ZIP:
+
+```text
+dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
+```
+
+지원되는 ChatGPT/Plugin 업로드 UI에서는 이 ZIP을 그대로 업로드할 수 있도록 `plugin.json`과 `skills/long-image-ocr-gpt-lite/SKILL.md`가 패키지 루트 기준으로 구성되어 있습니다.
+
+ChatGPT Skills 업로드가 제공되는 계정이라면 canonical skill 폴더는 다음입니다.
+
+```text
+skills/long-image-ocr-gpt-lite/
+```
+
+### Codex / ChatGPT Desktop — GitHub marketplace 방식
+
+이 repo에는 `.agents/plugins/marketplace.json`도 포함되어 있습니다.
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+codex plugin marketplace list
+```
+
+그 후 지원되는 ChatGPT Desktop/Codex 환경에서 Plugins Directory를 새로 열어 **Legendr Labs OCR Tools** source의 `korean-long-image-ocr-tool-lite`를 설치할 수 있습니다.
+
+### Gemini CLI — Gemini Lite
+
+```bash
+gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope user
+```
+
+또는 패키지 파일:
+
+```text
+dist/long-image-ocr-gemini-lite-v0.1.1.skill
+```
+
+설치 후 실행 중인 Gemini CLI 세션에서는:
+
+```text
+/skills reload
+```
 
 ## Included skills
 
-| Variant | Path | Focus |
+| Variant | Canonical path | Focus |
 |---|---|---|
-| GPT Lite | `long-image-ocr-gpt-lite/SKILL.md` | 짧은 배치 처리, 숫자 진행률, 체크포인트, 타임아웃/중단 후 재개 |
-| Gemini Lite | `long-image-ocr-gemini-lite/SKILL.md` | 원본 픽셀 우선, Drive/색인 텍스트 구분, 가짜 상세행 방지, 독립 검산 |
+| GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 짧은 배치 처리, 숫자 진행률, 체크포인트, 타임아웃/중단 후 재개 |
+| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | 원본 픽셀 우선, Drive/색인 텍스트 구분, 가짜 상세행 방지, 독립 검산 |
 
-각 폴더는 독립 스킬입니다. 사용하는 호스트에 맞는 하위 폴더를 선택하는 것을 권장합니다.
+기존 v0.1.0 호환을 위해 루트의 `long-image-ocr-gpt-lite/`와 `long-image-ocr-gemini-lite/`도 당분간 유지합니다. 신규 설치는 `skills/` 경로를 권장합니다.
 
 ## Core guarantees
 
@@ -32,7 +81,7 @@
 
 ## GPT Lite
 
-GPT 계열에서 긴 OCR 작업이 타임아웃되거나 진행상태가 보이지 않는 문제를 줄이기 위해 다음을 추가로 강제합니다.
+GPT 계열의 장시간 OCR 작업에서 다음을 강화합니다.
 
 - 일반 이미지 5–10장, 긴 이미지 2–5장 단위 배치
 - 배치별 숫자 진행률
@@ -41,15 +90,9 @@ GPT 계열에서 긴 OCR 작업이 타임아웃되거나 진행상태가 보이�
 - `INTERRUPTED_RESUMABLE` 상태
 - 백그라운드에서 계속 작업한다는 식의 허위 표현 금지
 
-Skill path:
-
-```text
-long-image-ocr-gpt-lite/SKILL.md
-```
-
 ## Gemini Lite
 
-Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오인하거나, 원본 접근 제한을 Google Drive 자체의 한계로 일반화하는 문제를 막기 위해 다음을 강화합니다.
+Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오인하거나, 현재 실행환경의 제한을 Google Drive 자체의 보편적 한계로 일반화하는 문제를 막기 위해 다음을 강화합니다.
 
 - Source Access Gate
 - `DIRECT_PIXEL_VERIFIED / TEXT_INDEX_ONLY / METADATA_ONLY / UNAVAILABLE`
@@ -58,31 +101,32 @@ Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오�
 - 화면 표시 P&L/수익률 우선 보존
 - 독립 검산 및 완료 상태 게이트
 
-Skill path:
-
-```text
-long-image-ocr-gemini-lite/SKILL.md
-```
-
-## Repository layout
+## Portable plugin layout
 
 ```text
 KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
+├─ plugin.json
+├─ .agents/plugins/marketplace.json
+├─ skills/
+│  ├─ long-image-ocr-gpt-lite/
+│  │  └─ SKILL.md
+│  └─ long-image-ocr-gemini-lite/
+│     └─ SKILL.md
+├─ dist/
+│  ├─ LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
+│  └─ long-image-ocr-gemini-lite-v0.1.1.skill
 ├─ README.md
 ├─ INSTALL.md
 ├─ CHANGELOG.md
 ├─ LICENSE
 ├─ VERSION
 ├─ RELEASE_NOTES_v0.1.0.md
-├─ long-image-ocr-gpt-lite/
-│  └─ SKILL.md
-└─ long-image-ocr-gemini-lite/
-   └─ SKILL.md
+└─ RELEASE_NOTES_v0.1.1.md
 ```
 
-## Status vocabulary
+The portable OpenAI plugin manifest is `plugin.json`. Portable plugin hosts discover skills from the root `skills/` directory.
 
-스킬에 따라 다음 상태 중 필요한 항목을 사용합니다.
+## Status vocabulary
 
 - `IN_PROGRESS`
 - `COMPLETE_VERIFIED`
@@ -92,23 +136,21 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 
 ## What this repository is not
 
-이 저장소는 독립 실행형 OCR 엔진이나 특정 OCR 모델을 제공하지 않습니다.
+이 저장소는 다음을 제공하지 않습니다.
 
-목적은 모델이 이미지 기반 복원 작업을 수행할 때 다음을 강화하는 것입니다.
+- 자체 OCR 엔진
+- Gemini/OpenAI API 호출 애플리케이션
+- EasyOCR/Tesseract 설치 프로그램
+- 이미지 자동 분할 실행기
+- 백그라운드 서버
 
-- 원본 충실도
-- 검증 가능성
-- 진행 가시성
-- 중단 복구성
-- 완료 상태의 정직한 표현
-
-실제 이미지 접근, OCR 성능, 설치 방식은 사용하는 ChatGPT/Codex/Gemini 등의 호스트 환경과 제공 도구에 따라 달라집니다.
+실제 이미지 접근, OCR/vision 성능, Drive 원본 접근 가능 여부는 설치되는 호스트와 그 호스트가 노출하는 도구 경로에 따라 달라집니다.
 
 ## Version
 
-**v0.1.0 — Initial stable Lite distribution**
+**v0.1.1 — Installable packaging update**
 
-See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.0.md`](./RELEASE_NOTES_v0.1.0.md) for details.
+See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.1.md`](./RELEASE_NOTES_v0.1.1.md).
 
 ## License
 

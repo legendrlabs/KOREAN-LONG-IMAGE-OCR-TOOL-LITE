@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "korean-long-image-ocr-tool-lite",
+  "version": "0.1.1",
+  "description": "Portable Agent Skills package for reliable long-image and multi-screenshot OCR/restoration workflows on GPT and Gemini hosts.",
+  "author": {
+    "name": "legendrlabs",
+    "url": "https://github.com/legendrlabs"
+  },
+  "homepage": "https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE",
+  "repository": "https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE",
+  "license": "MIT",
+  "keywords": [
+    "ocr",
+    "image-extraction",
+    "screenshots",
+    "agent-skill",
+    "checkpoint",
+    "verification"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Korean Long Image OCR Tool Lite",
+        "shortDescription": "Reliable long-image OCR workflows for GPT and Gemini",
+        "longDescription": "Reusable Agent Skills for screenshot OCR and structured restoration with source-fidelity checks, progress reporting, checkpointing, interruption recovery, and anti-fabrication safeguards."
+      }
+    }
+  }
+}
