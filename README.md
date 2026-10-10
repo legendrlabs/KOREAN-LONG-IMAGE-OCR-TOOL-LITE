@@ -31,6 +31,17 @@ ChatGPT Skills 업로드가 제공되는 계정이라면 canonical skill 폴더�
 skills/long-image-ocr-gpt-lite/
 ```
 
+### Codex / ChatGPT Desktop — GitHub marketplace 방식
+
+이 repo에는 `.agents/plugins/marketplace.json`도 포함되어 있습니다.
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+codex plugin marketplace list
+```
+
+그 후 지원되는 ChatGPT Desktop/Codex 환경에서 Plugins Directory를 새로 열어 **Legendr Labs OCR Tools** source의 `korean-long-image-ocr-tool-lite`를 설치할 수 있습니다.
+
 ### Gemini CLI — Gemini Lite
 
 ```bash
@@ -95,6 +106,7 @@ Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오�
 ```text
 KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 ├─ plugin.json
+├─ .agents/plugins/marketplace.json
 ├─ skills/
 │  ├─ long-image-ocr-gpt-lite/
 │  │  └─ SKILL.md
