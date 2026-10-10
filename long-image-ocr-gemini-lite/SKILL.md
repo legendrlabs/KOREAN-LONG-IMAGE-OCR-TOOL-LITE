@@ -1,84 +1,88 @@
 ---
 name: long-image-ocr-gemini-lite
-description: Use when Gemini must extract, restore, tabulate, or validate text or structured data from long screenshots, image files, scanned image sequences, or image collections from uploads, Drive, connectors, or local files.
+description: Use when Gemini must read, transcribe, extract, restore, tabulate, or validate text or structured data from long screenshots, dense document images, tables, transaction histories, chats, logs, Drive image collections, or other OCR-sensitive visual content.
 ---
 
 # Long Image OCR — Gemini Lite
 
-## Overview
+## Purpose
 
-Extract data from image pixels conservatively and preserve source fidelity.
+An **instruction-only, evidence-only native-vision protocol** for Gemini.
 
-**Core rule:** source modality, extraction status, and verification status must never be overstated.
+Use only vision, file, connector, rendering, and inspection operations the current host actually exposes. Do **not** invoke or claim to invoke external OCR engines, Python/MCP processes, APIs, Cloud Run, local executables, image-slicing programs, EasyOCR/Tesseract, or a `GEMINI_API_KEY` application unless the user explicitly supplied and requested them.
 
-The skill is complete only when the requested source coverage is honestly classified and the output can be traced back to the source images.
+**Core rule:** visible evidence beats plausibility; uncertainty beats guessing; missing evidence beats invented data.
 
----
+## 0. Critical gates
 
-## Iron Rules
+Every extracted character, number, date, transaction, product, row, field, or record must be supported by source evidence.
 
-1. **If you did not inspect the source pixels, do not claim that you visually inspected or OCR-verified them.**
-2. **If detail is unavailable, do not manufacture detail from a summary value.**
-3. **If only part of the requested source set is verified, do not call the whole job complete.**
-4. **Values explicitly shown on screen outrank values reconstructed from an inferred cost basis or secondary calculation.**
-5. **Execution-environment limitations must be described as environment/tool limitations, not as universal limitations of the storage platform.**
+1. If source pixels were not inspected, do not claim visual/OCR verification.
+2. **Reconstruction is not completion.** Never fill gaps to make a sequence look complete.
+3. Recurring patterns are not evidence. Never create missing records from repetition or expectation.
+4. Missing evidence must remain missing; mark uncertainty instead of guessing.
+5. Displayed source values outrank inferred/recomputed values for source restoration.
+6. Partial source coverage must never be described as complete.
+7. Execution-environment limits are environment/tool limits, not universal storage-platform limits.
+8. **Verification is a gate, not the deliverable.** After verification, continue to the requested table, ledger, spreadsheet, transcription, or other output.
 
-These rules override convenience, formatting quality, and pressure to produce a complete-looking result.
+## 1. Source modality gate
 
----
+Before reading an image, identify what is actually available:
 
-## 1. Source Access Gate
+- original/rendered **image pixels**
+- source-provided OCR/extracted text tied to the image
+- Drive/workspace **indexed text**
+- metadata only
+- no usable access
 
-Before declaring that image pixels are unavailable, check the actual access paths exposed in the current environment.
+Before declaring pixels unavailable, check applicable routes: direct image input, individual fetch, raw/original download, connector file reference, materialization/local file, or page/image rendering.
 
-For image sources in uploads, Google Drive, connectors, project files, or file references, check as applicable:
+If any route yields inspectable pixels, use them.
 
-- direct image attachment / native image input
-- individual file fetch
-- raw/original file download
-- connector file reference
-- file materialization to a local/sandbox path
-- local file already mounted in the runtime
-- page/image rendering supported by the file tool
-
-If any path yields the original image bytes or a rendered image that the model can inspect, use it.
-
-### Forbidden shortcut
-
-Do **not** generalize:
+Do not generalize:
 
 > Google Drive cannot provide image pixels.
 
-If the current environment cannot route the file to visual inspection, say instead:
+Say instead:
 
 > In the current execution environment, the available tool path could not deliver this source image to visual inspection.
 
-Do not claim that the storage platform itself lacks the capability unless independently established.
+Empty indexed text does not mean an image is unreadable. Do not claim crop, zoom, enhancement, or reinspection unless it actually occurred.
 
-External OCR engines such as Tesseract or EasyOCR are optional helpers, not a prerequisite for visual inspection when the model can directly inspect image pixels.
+## 2. Mandatory per-source state
 
----
-
-## 2. Mandatory Source Verification State
-
-Every source image or source unit must be classified as exactly one of:
+Every source image/page must be exactly one of:
 
 | State | Meaning |
 |---|---|
-| `DIRECT_PIXEL_VERIFIED` | Original/rendered image pixels were directly inspected. |
+| `DIRECT_PIXEL_VERIFIED` | Original/rendered pixels were directly inspected. |
 | `TEXT_INDEX_ONLY` | Only indexed/extracted text was available; pixels were not inspected. |
-| `METADATA_ONLY` | Only filename/date/size/other metadata was available. |
-| `UNAVAILABLE` | The source could not be accessed sufficiently for the requested extraction. |
+| `METADATA_ONLY` | Only metadata was available. |
+| `UNAVAILABLE` | Source access was insufficient for the requested task. |
 
-Never present `TEXT_INDEX_ONLY`, `METADATA_ONLY`, or `UNAVAILABLE` as OCR-complete or visually verified.
+If pixels were inspected but a value remains unreadable, keep the source `DIRECT_PIXEL_VERIFIED` and mark the value `UNREADABLE` or `AMBIGUOUS`.
 
-For multi-image work, maintain per-image status rather than a single blanket status.
+Never present non-pixel states as visually verified. Maintain state per source, not as a blanket status.
 
----
+## 3. Source coverage gate
 
-## 3. Extraction Hierarchy
+For multi-image/page work, maintain a coverage checklist.
 
-Use the strongest available evidence in this order:
+Before claiming completion:
+
+- inspect every accessible provided source;
+- do not stop after a readable subset;
+- do not skip similar-looking files;
+- do not substitute indexed text for visual inspection when pixels are available;
+- do not silently omit empty-index sources;
+- record unavailable/unresolved sources explicitly.
+
+Prefer exact counts over “most” or “nearly all.”
+
+## 4. Evidence hierarchy and screen values
+
+Evidence priority:
 
 1. `DIRECT_PIXEL_VERIFIED`
 2. source-provided text extraction tied to the same image
@@ -86,41 +90,15 @@ Use the strongest available evidence in this order:
 4. metadata
 5. inference
 
-Inference must never replace missing source data unless the user explicitly asks for estimation. Estimated values must be separated from source values and labeled as estimates.
+Inference may not replace missing source data unless the user asks for estimation.
 
-### Screen values
+Preserve visibly displayed quantity, valuation, P&L, return %, principal/cost, FX rate, subtotal, timestamp, and similar fields as source values. Do not silently overwrite them with calculations. If both are useful, keep `screen_*` and `calculated_*` fields separate.
 
-When a screen explicitly shows:
+## 5. No fake detail
 
-- quantity
-- valuation
-- P&L
-- return %
-- principal/cost
-- total profit
-- FX rate
-- account subtotal
+Totals are not substitutes for missing position/item/transaction detail.
 
-record the displayed value as the source value.
-
-Do not overwrite a displayed P&L or return with a value recomputed from an inferred cost basis.
-
-If calculations are useful, keep separate fields such as:
-
-- `screen_pnl`
-- `screen_return`
-- `calculated_pnl`
-- `calculated_return`
-
----
-
-## 4. Detail Cannot Be Replaced by Aggregate Data
-
-If the task requires position-level, row-level, item-level, or other detailed reconstruction, a visible account total or category subtotal is **not** a substitute for missing detail.
-
-### Forbidden synthetic detail
-
-Do not create rows such as:
+Do not create synthetic rows such as:
 
 - `PORTFOLIO`
 - `TOTAL`
@@ -128,314 +106,126 @@ Do not create rows such as:
 - `OTHER HOLDINGS`
 - invented ticker/item placeholders
 
-merely to force row sums to match a known summary total.
+to force reconciliation.
 
-If detailed source data is unavailable, keep that source unit explicitly:
+Unavailable detail stays:
 
 `미복원 / 원본 미대조`
 
-or equivalent structured status.
+Summary values may be stored separately, but must not masquerade as reconstructed detail.
 
-Aggregate values may be retained in a separate summary table, but they must not masquerade as reconstructed detail.
+## 6. Seven-phase workflow
 
----
+### Phase 1 — Layout reconnaissance
+Inspect the whole source for headings, tables, columns, cards, repeated rows, transaction groups, chats/logs, timelines, and dense regions. Establish visible order.
 
-## 5. Independent Validation
+### Phase 2 — Segmented reading
+Read long/dense sources in ordered logical regions using semantic boundaries. If a material region cannot be inspected reliably, mark `[not verified]`.
 
-Validation must use evidence independent from the value being validated.
+### Phase 3 — Boundary reconciliation
+At region/screenshot boundaries check split rows, repeated headers, truncated values, skipped transitions, and overlap duplicates. Remove only overlap duplicates; preserve genuine repeated records.
 
-### Valid example
+### Phase 4 — Precision pass
+Recheck dates, timestamps, amounts, prices, quantities, percentages, tickers, identifiers, and row/column associations. Never resolve conflicting digits by intuition.
 
-- Sum individual overseas holding rows extracted from the source.
-- Compare that sum with the overseas-assets total displayed on the source screen.
+### Phase 5 — Low-confidence pass
+Treat tiny text, blur, compression, low contrast, clipping, overlays, and look-alike characters as low confidence. Revisit only with real host capabilities. Use `UNREADABLE`, `AMBIGUOUS: A / B`, `SOURCE_CROPPED`, or `ORIGINAL_NOT_VERIFIED` when unresolved.
 
-### Invalid example
+### Phase 6 — Reconstruction
+Reassemble only source-supported information. Preserve order, chronology, relationships, grouping, and legitimate repetition. Never invent data for completeness.
 
-- Copy the displayed overseas total into a synthetic `PORTFOLIO` row.
-- Sum that row.
-- Compare it back to the same displayed total.
-- Report zero difference as successful validation.
+### Phase 7 — Audit
+Check source coverage, overlap duplicates, missing rows, numeric transcription, row/column shifts, uncertainty, traceability, aggregate reconciliation, and spreadsheet/formula errors when applicable.
 
-That is circular validation and is forbidden.
+## 7. Structured output safety
 
-### Spreadsheet/formula validation
+For tables, ledgers, CSV, and spreadsheets:
 
-When generating a ledger or spreadsheet:
+- preserve field boundaries and row/column associations;
+- verify each structured row independently;
+- never build CSV by blindly joining fields with commas;
+- quote/escape CSV fields containing commas, quotes, or newlines;
+- use native spreadsheet cells for workbooks;
+- ensure commas inside names/notes/filenames do not shift columns;
+- scan for `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, `#N/A`;
+- check wrong-row/cross-row formula references.
 
-- verify formulas reference the intended row
-- scan for cross-row reference mistakes
-- scan for `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, `#N/A`
-- distinguish source-display rounding from actual extraction errors
-- do not assert the cause of small rounding differences unless the cause is verified
+## 8. Summary and independent validation
 
----
+Recompute every summary, total, count, monthly rollup, or yearly rollup from the **final structured rows**.
 
-## 6. Completion Gate
+Make explicit include/exclude decisions for overlap duplicates, cancellations/reversals, funding/top-ups, free/zero-value rows, and other non-counted evidence.
 
-For a source set of N images, the final report must include at least:
+Valid:
 
-- total source count
-- `DIRECT_PIXEL_VERIFIED` count
-- `TEXT_INDEX_ONLY` count
-- `METADATA_ONLY` count
-- `UNAVAILABLE` count
-- detailed reconstruction completed count
-- detailed reconstruction missing count
-- number of extracted detailed rows/items
-- unresolved ambiguity count
+`SUM(actual extracted detail) ↔ displayed source subtotal`
 
-Final job status must be exactly one of:
+Invalid circular validation:
 
-### `COMPLETE_VERIFIED`
+copy displayed subtotal → synthetic row → sum same row → compare to original subtotal → declare success.
 
-Use only when every source required for the requested result was directly verified or otherwise fully verified at the level necessary for the task.
+Zero difference does not prove correctness when validation is circular.
 
-### `PARTIAL_VERIFIED`
+## 9. Operating modes
 
-Use when some requested sources or required details remain unverified/unrestored.
+### Auto
+Default. Apply the full protocol for long, dense, repetitive, tabular, financial, or precision-sensitive sources.
 
-### `DATA_HOLD`
+### Exact transcription
+Preserve visible wording/order. Do not silently autocorrect, normalize, or summarize unless asked. Mark uncertainty explicitly.
 
-Use when source access, ambiguity, or validation failure makes the requested result unsafe to use.
+### Structured extraction
+Verify every row independently, preserve associations, never move values between rows, never create missing rows, preserve genuine duplicates, and normalize only when requested.
 
-### Forbidden completion language
+## 10. Completion gate
 
-If the task is not `COMPLETE_VERIFIED`, do not say:
+Final status must be exactly one of:
 
-- complete
-- fully restored
-- fully verified
-- audit complete
-- reliability secured
-- all data reconstructed
+- `COMPLETE_VERIFIED`
+- `PARTIAL_VERIFIED`
+- `DATA_HOLD`
 
-Use exact coverage counts instead.
+`COMPLETE_VERIFIED`: every source required for the requested result was verified at the necessary level.
 
----
+`PARTIAL_VERIFIED`: some requested sources/details remain unverified or unrestored.
 
-## 7. Workflow
+`DATA_HOLD`: access, ambiguity, or validation failure makes the result unsafe to use.
 
-### Step A — Inventory
+When relevant, report:
 
-Enumerate the expected source images/files.
+- total sources
+- `DIRECT_PIXEL_VERIFIED`
+- `TEXT_INDEX_ONLY`
+- `METADATA_ONLY`
+- `UNAVAILABLE`
+- detail complete / missing
+- extracted rows/items
+- unresolved ambiguities
 
-Record:
+If status is not `COMPLETE_VERIFIED`, do not say complete, fully restored, fully verified, audit complete, all data reconstructed, or nothing missing.
 
-- source identifier
-- filename
-- expected order/date if applicable
-- access route
+## 11. Regression checks
 
-### Step B — Capability Check
+A release must preserve these behaviors:
 
-Before accepting a limitation, try the available original-file paths from the Source Access Gate.
-
-### Step C — Per-Source Extraction
-
-For every source:
-
-1. assign verification state
-2. inspect source pixels when available
-3. extract only visible/supported data
-4. mark ambiguous characters/numbers rather than guessing
-5. preserve the original unit/currency/precision
-
-### Step D — Structured Reconstruction
-
-Keep summary-level and detail-level data separate.
-
-Never synthesize missing detail from totals.
-
-### Step E — Independent Validation
-
-Re-aggregate actual detail and compare against source-level summaries where available.
-
-### Step F — Coverage Report
-
-Report exact counts and assign `COMPLETE_VERIFIED`, `PARTIAL_VERIFIED`, or `DATA_HOLD`.
-
----
-
-## 8. Ambiguity Rules
-
-When a value is hard to read:
-
-- inspect the relevant image region again
-- use adjacent labels/columns only as contextual evidence
-- compare repeated instances only when they refer to the same field
-- preserve uncertainty if still ambiguous
-
-Never choose a value solely because it makes a total reconcile.
-
-Preferred unresolved notation:
-
-`UNREADABLE`
-
-`AMBIGUOUS: 3.1% / 3.7%`
-
-`SOURCE_CROPPED`
-
-`ORIGINAL_NOT_VERIFIED`
-
----
-
-## 9. Failure Patterns to Reject
-
-### Failure: “I avoided fabrication, so the work is complete.”
-
-Wrong.
-
-Avoiding fabrication is necessary but does not convert missing detail into completed work.
-
-### Failure: “The connector gave only text, therefore the platform cannot provide pixels.”
-
-Wrong.
-
-First distinguish platform capability from the currently exposed execution/tool path.
-
-### Failure: “A category total can stand in for its missing positions.”
-
-Wrong.
-
-Summary and detail are different data grains.
-
-### Failure: “Calculated P&L is cleaner than the displayed P&L.”
-
-Wrong for source restoration.
-
-Preserve displayed source values; calculations belong in separate fields.
-
-### Failure: “The validation difference is zero, therefore extraction is correct.”
-
-Not necessarily.
-
-Check whether validation is circular or independently derived.
-
----
-
-## 10. Required Regression Tests
-
-A release of this skill is not accepted unless these scenarios pass.
-
-### Test A — Drive image collection with fetch available
-
-**Given:** 70 JPG files in a Drive folder and individual original-file fetch is available.
-
-**Must:**
-
-- attempt individual image retrieval
-- visually inspect the fetched image when possible
-- not stop at indexed text
-- not describe Drive itself as incapable of pixel access
-
-**Pass condition:** source states reflect actual per-file visual access.
-
----
-
-### Test B — One source unavailable
-
-**Given:** 70 sources; 69 are directly inspectable and 1 cannot be accessed.
-
-**Must:**
-
-- verify 69 sources
-- mark 1 as unresolved/unrestored
-- not insert a synthetic aggregate row in place of that source's missing detail
-- return `PARTIAL_VERIFIED`
-
----
-
-### Test C — Displayed P&L conflicts with inferred P&L
-
-**Given:** source shows:
-
-`JEPQ | $5,633.00 | +$239.64 | +4.4%`
-
-but a reconstructed cost basis produces another P&L.
-
-**Must:**
-
-- store `+$239.64` and `+4.4%` as screen/source values
-- keep any calculated alternative separate
-- never replace the source values
-
----
-
-### Test D — Circular validation attempt
-
-**Given:** source overseas total is `$20,000`; detailed holdings are unavailable.
-
-**Forbidden:**
-
-create `PORTFOLIO = $20,000`, sum it, and call the source validated.
-
-**Expected:** detailed holdings remain unreconstructed; summary value may be recorded separately.
-
----
-
-### Test E — Partial coverage completion language
-
-**Given:** only 13 of 70 source images are processed.
-
-**Forbidden:**
-
-> A verified ledger has been completed.
-
-**Expected:**
-
-> 13/70 sources were processed; remaining sources are unverified. Status: `PARTIAL_VERIFIED`.
-
----
-
-### Test F — Wrong-row spreadsheet reference
-
-**Given:** validation formula for row 30 accidentally references row 20.
-
-**Expected:** automated formula/reference review flags the cross-row mismatch before delivery.
-
----
-
-## 11. Final Report Template
-
-Use a compact report like:
-
-```text
-Status: PARTIAL_VERIFIED
-
-Sources
-- Total: 70
-- DIRECT_PIXEL_VERIFIED: 69
-- TEXT_INDEX_ONLY: 0
-- METADATA_ONLY: 0
-- UNAVAILABLE: 1
-
-Reconstruction
-- Detail complete: 69
-- Detail missing: 1
-- Detailed rows extracted: 842
-- Ambiguous values: 0
-
-Validation
-- Independent subtotal checks: 69/69 passed
-- Circular aggregate substitutions: 0
-- Formula-reference errors: 0
-
-Unresolved
-- 2025-12-14: original image unavailable; left as 미복원 / 원본 미대조
-```
-
-Do not replace exact counts with vague claims such as “most,” “nearly all,” or “sufficiently verified” when exact counts are available.
-
----
-
-## 12. Non-Negotiable Invariants
-
-Before delivery, verify all five:
-
-- [ ] I did not claim visual inspection for any source whose pixels I did not inspect.
-- [ ] I did not fabricate detailed rows from aggregate totals.
-- [ ] I did not overwrite displayed source values with inferred calculations.
-- [ ] My validation is independent rather than circular.
-- [ ] My completion status matches the actual verified coverage.
-
-If any box cannot be checked, the work is not `COMPLETE_VERIFIED`.
+- **Drive pixels available:** inspect pixels; do not stop at indexed text.
+- **69/70 available:** verify 69, mark 1 unresolved, no synthetic detail, `PARTIAL_VERIFIED`.
+- **Displayed P&L conflicts with calculation:** preserve displayed source value; keep calculation separate.
+- **Subtotal exists but detail missing:** no synthetic subtotal row or circular validation.
+- **13/70 processed:** report 13/70 and `PARTIAL_VERIFIED`, not completion.
+- **Wrong-row formula:** flag before delivery.
+- **CSV field contains comma/quote/newline:** quote/escape without shifting columns.
+
+## 12. Response behavior
+
+Apply the protocol silently unless methodology is requested. Return the requested result directly and state material source limitations when present.
+
+Before delivery verify:
+
+- [ ] no visual-inspection claim without inspected pixels;
+- [ ] no invented detail from totals or recurring patterns;
+- [ ] no displayed source value silently replaced by inference;
+- [ ] every accessible source was covered before completion claims;
+- [ ] validation is independent, not circular;
+- [ ] structured outputs preserve field/row/column boundaries;
+- [ ] completion status matches actual verified coverage.
