@@ -6,16 +6,66 @@
 
 한국어 장문 스크린샷·다중 이미지 OCR/복원 작업을 위한 경량 Agent Skill 배포판입니다.
 
-**Current version: v0.1.1**
+**Current version: v0.1.2**
 
 - [설치 가이드](./INSTALL.md)
-- [v0.1.1 릴리스 노트](./RELEASE_NOTES_v0.1.1.md)
+- [v0.1.2 릴리스 노트](./RELEASE_NOTES_v0.1.2.md)
 - [변경 이력](./CHANGELOG.md)
 - [MIT License](./LICENSE)
 
 ## Quick install
 
+### Gemini — Markdown direct install first
+
+Gemini 계열에서는 우선 아래 단일 Markdown을 사용합니다.
+
+```text
+dist/long-image-ocr-gemini-lite.md
+```
+
+이 파일은 `long-image-ocr-gemini-lite`의 `SKILL.md` 본문과 동일한 배포용 Markdown입니다.
+
+현재 환경에 **Agent Skill / SKILL.md / Markdown 등록 기능**이 있으면 이 파일을 받아 다음 이름으로 등록하는 방식을 최우선으로 사용합니다.
+
+```text
+long-image-ocr-gemini-lite
+```
+
+복붙용 설치 요청문도 포함합니다.
+
+```text
+dist/GEMINI_INSTALL_PROMPT.txt
+```
+
+중요:
+
+- Markdown을 읽을 수 있는 것과 **영구 스킬 등록**은 다릅니다.
+- 현재 호스트가 영구 등록 기능을 제공하지 않으면, 해당 대화에서 지침을 로드해 사용할 수는 있어도 영구 설치했다고 표현하면 안 됩니다.
+- 이 경우에도 저장소를 실행형 OCR 앱으로 재해석하거나 `npm`, `pip`, `GEMINI_API_KEY`, 별도 OCR 서버 설치 절차를 만들어내면 안 됩니다.
+
+### Gemini CLI fallback
+
+직접 Markdown 등록 경로가 없고 Gemini CLI skill 설치가 가능하면:
+
+```bash
+gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope user
+```
+
+또는 호환용 `.skill` 패키지:
+
+```text
+dist/long-image-ocr-gemini-lite-v0.1.1.skill
+```
+
+설치 후 실행 중인 Gemini CLI 세션에서는:
+
+```text
+/skills reload
+```
+
 ### ChatGPT / Codex — GPT Lite
+
+GPT 경로는 v0.1.1과 동일하게 유지됩니다.
 
 사전 패키징된 skill-only plugin ZIP:
 
@@ -42,24 +92,6 @@ codex plugin marketplace list
 
 그 후 지원되는 ChatGPT Desktop/Codex 환경에서 Plugins Directory를 새로 열어 **Legendr Labs OCR Tools** source의 `korean-long-image-ocr-tool-lite`를 설치할 수 있습니다.
 
-### Gemini CLI — Gemini Lite
-
-```bash
-gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope user
-```
-
-또는 패키지 파일:
-
-```text
-dist/long-image-ocr-gemini-lite-v0.1.1.skill
-```
-
-설치 후 실행 중인 Gemini CLI 세션에서는:
-
-```text
-/skills reload
-```
-
 ## Included skills
 
 | Variant | Canonical path | Focus |
@@ -67,7 +99,9 @@ dist/long-image-ocr-gemini-lite-v0.1.1.skill
 | GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 짧은 배치 처리, 숫자 진행률, 체크포인트, 타임아웃/중단 후 재개 |
 | Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | 원본 픽셀 우선, Drive/색인 텍스트 구분, 가짜 상세행 방지, 독립 검산 |
 
-기존 v0.1.0 호환을 위해 루트의 `long-image-ocr-gpt-lite/`와 `long-image-ocr-gemini-lite/`도 당분간 유지합니다. 신규 설치는 `skills/` 경로를 권장합니다.
+기존 v0.1.0 호환을 위해 루트의 `long-image-ocr-gpt-lite/`와 `long-image-ocr-gemini-lite/`도 당분간 유지합니다.
+
+Gemini 신규 설치에서는 `dist/long-image-ocr-gemini-lite.md`를 가장 단순한 이식용 파일로 권장합니다.
 
 ## Core guarantees
 
@@ -101,7 +135,7 @@ Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오�
 - 화면 표시 P&L/수익률 우선 보존
 - 독립 검산 및 완료 상태 게이트
 
-## Portable plugin layout
+## Distribution layout
 
 ```text
 KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
@@ -114,17 +148,18 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 │     └─ SKILL.md
 ├─ dist/
 │  ├─ LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
-│  └─ long-image-ocr-gemini-lite-v0.1.1.skill
+│  ├─ long-image-ocr-gemini-lite-v0.1.1.skill
+│  ├─ long-image-ocr-gemini-lite.md
+│  └─ GEMINI_INSTALL_PROMPT.txt
 ├─ README.md
 ├─ INSTALL.md
 ├─ CHANGELOG.md
 ├─ LICENSE
 ├─ VERSION
 ├─ RELEASE_NOTES_v0.1.0.md
-└─ RELEASE_NOTES_v0.1.1.md
+├─ RELEASE_NOTES_v0.1.1.md
+└─ RELEASE_NOTES_v0.1.2.md
 ```
-
-The portable OpenAI plugin manifest is `plugin.json`. Portable plugin hosts discover skills from the root `skills/` directory.
 
 ## Status vocabulary
 
@@ -148,9 +183,11 @@ The portable OpenAI plugin manifest is `plugin.json`. Portable plugin hosts disc
 
 ## Version
 
-**v0.1.1 — Installable packaging update**
+**v0.1.2 — Gemini Markdown-first install update**
 
-See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.1.md`](./RELEASE_NOTES_v0.1.1.md).
+GPT packaging remains unchanged from v0.1.1.
+
+See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.2.md`](./RELEASE_NOTES_v0.1.2.md).
 
 ## License
 
