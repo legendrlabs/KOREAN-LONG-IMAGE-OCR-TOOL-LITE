@@ -6,10 +6,10 @@
 
 한국어 장문 스크린샷·다중 이미지 OCR/복원 작업을 위한 경량 Agent Skill 배포판입니다.
 
-**Current version: v0.1.2**
+**Current repository version: v0.1.3**
 
 - [설치 가이드](./INSTALL.md)
-- [v0.1.2 릴리스 노트](./RELEASE_NOTES_v0.1.2.md)
+- [v0.1.3 릴리스 노트](./RELEASE_NOTES_v0.1.3.md)
 - [변경 이력](./CHANGELOG.md)
 - [MIT License](./LICENSE)
 
@@ -17,44 +17,38 @@
 
 ### Gemini — Markdown direct install first
 
-Gemini 계열에서는 우선 아래 단일 Markdown을 사용합니다.
+가장 단순한 Gemini 배포 파일:
 
 ```text
 dist/long-image-ocr-gemini-lite.md
 ```
 
-이 파일은 `long-image-ocr-gemini-lite`의 `SKILL.md` 본문과 동일한 배포용 Markdown입니다.
+이 파일은 canonical `skills/long-image-ocr-gemini-lite/SKILL.md`와 동일한 내용을 담습니다.
 
-현재 환경에 **Agent Skill / SKILL.md / Markdown 등록 기능**이 있으면 이 파일을 받아 다음 이름으로 등록하는 방식을 최우선으로 사용합니다.
+현재 환경에 Agent Skill / `SKILL.md` / Markdown 등록 기능이 있으면 다음 이름으로 직접 등록하는 방식을 최우선으로 사용합니다.
 
 ```text
 long-image-ocr-gemini-lite
 ```
 
-복붙용 설치 요청문도 포함합니다.
+복붙용 요청문:
 
 ```text
 dist/GEMINI_INSTALL_PROMPT.txt
 ```
 
-중요:
-
-- Markdown을 읽을 수 있는 것과 **영구 스킬 등록**은 다릅니다.
-- 현재 호스트가 영구 등록 기능을 제공하지 않으면, 해당 대화에서 지침을 로드해 사용할 수는 있어도 영구 설치했다고 표현하면 안 됩니다.
-- 이 경우에도 저장소를 실행형 OCR 앱으로 재해석하거나 `npm`, `pip`, `GEMINI_API_KEY`, 별도 OCR 서버 설치 절차를 만들어내면 안 됩니다.
+현재 호스트가 영구 스킬 등록 기능을 제공하지 않으면, Markdown을 현재 대화에 로드해 사용할 수는 있어도 영구 설치했다고 표현하면 안 됩니다.
 
 ### Gemini CLI fallback
-
-직접 Markdown 등록 경로가 없고 Gemini CLI skill 설치가 가능하면:
 
 ```bash
 gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope user
 ```
 
-또는 호환용 `.skill` 패키지:
+또는 current `.skill` package:
 
 ```text
-dist/long-image-ocr-gemini-lite-v0.1.1.skill
+dist/long-image-ocr-gemini-lite-v0.1.3.skill
 ```
 
 설치 후 실행 중인 Gemini CLI 세션에서는:
@@ -65,43 +59,50 @@ dist/long-image-ocr-gemini-lite-v0.1.1.skill
 
 ### ChatGPT / Codex — GPT Lite
 
-GPT 경로는 v0.1.1과 동일하게 유지됩니다.
-
-사전 패키징된 skill-only plugin ZIP:
+GPT 경로는 **v0.1.1과 동일하게 유지**합니다. 현재 ChatGPT Work 테스트 운용 중인 GPT skill 본문과 plugin package는 v0.1.3에서 변경하지 않습니다.
 
 ```text
 dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
+skills/long-image-ocr-gpt-lite/SKILL.md
 ```
 
-지원되는 ChatGPT/Plugin 업로드 UI에서는 이 ZIP을 그대로 업로드할 수 있도록 `plugin.json`과 `skills/long-image-ocr-gpt-lite/SKILL.md`가 패키지 루트 기준으로 구성되어 있습니다.
-
-ChatGPT Skills 업로드가 제공되는 계정이라면 canonical skill 폴더는 다음입니다.
-
-```text
-skills/long-image-ocr-gpt-lite/
-```
-
-### Codex / ChatGPT Desktop — GitHub marketplace 방식
-
-이 repo에는 `.agents/plugins/marketplace.json`도 포함되어 있습니다.
+Codex / ChatGPT Desktop marketplace:
 
 ```bash
 codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
 codex plugin marketplace list
 ```
 
-그 후 지원되는 ChatGPT Desktop/Codex 환경에서 Plugins Directory를 새로 열어 **Legendr Labs OCR Tools** source의 `korean-long-image-ocr-tool-lite`를 설치할 수 있습니다.
-
 ## Included skills
 
 | Variant | Canonical path | Focus |
 |---|---|---|
-| GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 짧은 배치 처리, 숫자 진행률, 체크포인트, 타임아웃/중단 후 재개 |
-| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | 원본 픽셀 우선, Drive/색인 텍스트 구분, 가짜 상세행 방지, 독립 검산 |
+| GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 소배치, 숫자 진행률, 체크포인트, 중단 후 재개 |
+| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | native vision, source modality/coverage, 7-phase OCR workflow, anti-fabrication, structured-output validation |
 
-기존 v0.1.0 호환을 위해 루트의 `long-image-ocr-gpt-lite/`와 `long-image-ocr-gemini-lite/`도 당분간 유지합니다.
+## Gemini Lite v0.1.3 highlights
 
-Gemini 신규 설치에서는 `dist/long-image-ocr-gemini-lite.md`를 가장 단순한 이식용 파일로 권장합니다.
+Gemini Lite는 이제 **instruction-only, evidence-only native-vision protocol**로 명시됩니다.
+
+핵심 규칙:
+
+- 외부 OCR/Python/MCP/API/Cloud Run/로컬 실행기/`GEMINI_API_KEY` 앱으로 재해석 금지
+- image pixels와 Drive/workspace indexed text를 구분
+- `DIRECT_PIXEL_VERIFIED / TEXT_INDEX_ONLY / METADATA_ONLY / UNAVAILABLE` per-source 상태 유지
+- 모든 접근 가능한 source를 확인하기 전 완료 선언 금지
+- 반복 패턴이나 계좌 합계로 누락 상세행 생성 금지
+- 화면 표시값을 계산값으로 덮어쓰기 금지
+- 7-phase workflow:
+  1. Layout reconnaissance
+  2. Segmented reading
+  3. Boundary reconciliation
+  4. Precision pass
+  5. Low-confidence pass
+  6. Reconstruction
+  7. Audit
+- CSV quoting / spreadsheet cell boundary / formula-reference 검증
+- 합계는 final structured rows에서 재계산하고 include/exclude 기준을 명시
+- 검증은 결과물이 아니라 gate이며, 검증 후 사용자가 요청한 실제 결과물까지 계속 생성
 
 ## Core guarantees
 
@@ -113,42 +114,21 @@ Gemini 신규 설치에서는 `dist/long-image-ocr-gemini-lite.md`를 가장 단
 4. 일부만 검증한 결과를 전체 완료라고 표현하지 않습니다.
 5. 집계값을 그대로 복사한 뒤 다시 비교하는 순환 검산을 인정하지 않습니다.
 
-## GPT Lite
-
-GPT 계열의 장시간 OCR 작업에서 다음을 강화합니다.
-
-- 일반 이미지 5–10장, 긴 이미지 2–5장 단위 배치
-- 배치별 숫자 진행률
-- 증분 저장 및 체크포인트
-- 타임아웃 후 첫 미검증 소스부터 재개
-- `INTERRUPTED_RESUMABLE` 상태
-- 백그라운드에서 계속 작업한다는 식의 허위 표현 금지
-
-## Gemini Lite
-
-Gemini 계열에서 Drive 색인 텍스트를 원본 이미지 판독으로 오인하거나, 현재 실행환경의 제한을 Google Drive 자체의 보편적 한계로 일반화하는 문제를 막기 위해 다음을 강화합니다.
-
-- Source Access Gate
-- `DIRECT_PIXEL_VERIFIED / TEXT_INDEX_ONLY / METADATA_ONLY / UNAVAILABLE`
-- 개별 파일 fetch/raw download/materialization 등 실제 원본 접근 경로 우선 확인
-- `PORTFOLIO`, `TOTAL`, `OTHER HOLDINGS` 등 합계 기반 가짜 상세행 금지
-- 화면 표시 P&L/수익률 우선 보존
-- 독립 검산 및 완료 상태 게이트
-
 ## Distribution layout
 
 ```text
 KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
-├─ plugin.json
+├─ plugin.json                     # GPT portable plugin metadata (v0.1.1)
 ├─ .agents/plugins/marketplace.json
 ├─ skills/
 │  ├─ long-image-ocr-gpt-lite/
 │  │  └─ SKILL.md
 │  └─ long-image-ocr-gemini-lite/
-│     └─ SKILL.md
+│     └─ SKILL.md                  # current Gemini skill
 ├─ dist/
 │  ├─ LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
 │  ├─ long-image-ocr-gemini-lite-v0.1.1.skill
+│  ├─ long-image-ocr-gemini-lite-v0.1.3.skill
 │  ├─ long-image-ocr-gemini-lite.md
 │  └─ GEMINI_INSTALL_PROMPT.txt
 ├─ README.md
@@ -158,8 +138,11 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 ├─ VERSION
 ├─ RELEASE_NOTES_v0.1.0.md
 ├─ RELEASE_NOTES_v0.1.1.md
-└─ RELEASE_NOTES_v0.1.2.md
+├─ RELEASE_NOTES_v0.1.2.md
+└─ RELEASE_NOTES_v0.1.3.md
 ```
+
+Legacy top-level skill folders remain for v0.1.x compatibility and are kept in sync with the canonical Gemini skill.
 
 ## Status vocabulary
 
@@ -168,6 +151,8 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 - `PARTIAL_VERIFIED`
 - `INTERRUPTED_RESUMABLE`
 - `DATA_HOLD`
+
+Gemini Lite uses `COMPLETE_VERIFIED / PARTIAL_VERIFIED / DATA_HOLD` for final task state. GPT Lite additionally uses `IN_PROGRESS / INTERRUPTED_RESUMABLE` for long-running checkpoint workflows.
 
 ## What this repository is not
 
@@ -183,11 +168,11 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 
 ## Version
 
-**v0.1.2 — Gemini Markdown-first install update**
+**v0.1.3 — Gemini native-vision workflow merge**
 
-GPT packaging remains unchanged from v0.1.1.
+GPT skill/package remains unchanged from v0.1.1 while GPT testing continues.
 
-See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.2.md`](./RELEASE_NOTES_v0.1.2.md).
+See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.3.md`](./RELEASE_NOTES_v0.1.3.md).
 
 ## License
 
