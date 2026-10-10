@@ -15,7 +15,7 @@ Current version: **v0.1.1**
 | 사용 환경 | 설치 대상 |
 |---|---|
 | ChatGPT 웹/앱 | `long-image-ocr-gpt-lite` |
-| Codex | `long-image-ocr-gpt-lite` |
+| ChatGPT Desktop / Codex | `korean-long-image-ocr-tool-lite` plugin 또는 `long-image-ocr-gpt-lite` skill |
 | Gemini CLI | `long-image-ocr-gemini-lite` |
 
 Canonical skill paths:
@@ -95,13 +95,55 @@ skills/long-image-ocr-gpt-lite/SKILL.md
 
 ## D. GitHub URL만 채팅에 붙여 넣는 경우
 
-일반 ChatGPT 채팅에 GitHub URL을 붙이는 것만으로 **항상 계정에 영구 설치되는 것은 아닙니다**.
+일반 ChatGPT 웹 채팅에 GitHub URL을 붙이는 것만으로 **항상 계정에 영구 설치되는 것은 아닙니다**.
 
 해당 채팅이 GitHub 내용을 읽을 수 있다면 현재 대화에서 지침을 로드해 사용할 수는 있지만, 새 채팅 자동 적용을 원하는 경우 Skills/Plugin 설치 기능을 사용해야 합니다.
 
 ---
 
-# 3. Gemini CLI
+# 3. ChatGPT Desktop / Codex — GitHub marketplace 설치
+
+v0.1.1부터 이 repo는 repo marketplace를 포함합니다.
+
+```text
+.agents/plugins/marketplace.json
+```
+
+Codex CLI에서 marketplace를 추가:
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+```
+
+확인:
+
+```bash
+codex plugin marketplace list
+```
+
+그 후 지원되는 ChatGPT Desktop/Codex 환경에서 Plugins Directory를 새로 열고 **Legendr Labs OCR Tools** source에서:
+
+```text
+korean-long-image-ocr-tool-lite
+```
+
+를 설치합니다.
+
+이 방식은 GitHub repository를 marketplace source로 등록한 뒤 그 repo 안의 portable plugin을 설치하는 방식입니다.
+
+Repo의 portable plugin root는 다음 요소를 포함합니다.
+
+```text
+plugin.json
+skills/
+.agents/plugins/marketplace.json
+```
+
+GPT에서 실제 OCR 작업에는 `long-image-ocr-gpt-lite`가 선택되어야 합니다.
+
+---
+
+# 4. Gemini CLI
 
 Gemini CLI는 Git repository의 특정 skill directory를 직접 설치할 수 있습니다.
 
@@ -168,17 +210,9 @@ gemini skills link ./skills/long-image-ocr-gemini-lite --scope user
 
 ---
 
-# 4. Codex
+# 5. Codex skill-only 설치
 
-이 저장소는 portable plugin 규격에 맞춰 루트에 `plugin.json`과 `skills/` 디렉터리를 둡니다.
-
-GPT Lite canonical directory:
-
-```text
-skills/long-image-ocr-gpt-lite/
-```
-
-Codex 환경에서 직접 skill directory 설치가 가능한 경우 다음 GitHub 경로를 지정합니다.
+Plugin marketplace를 사용하지 않고 GPT Lite skill directory만 설치하는 환경에서는 다음 canonical GitHub 경로를 사용합니다.
 
 ```text
 https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE/tree/main/skills/long-image-ocr-gpt-lite
@@ -188,7 +222,7 @@ Repo-local skills를 사용하는 프로젝트에서는 필요에 따라 해당 
 
 ---
 
-# 5. 설치 후 테스트
+# 6. 설치 후 테스트
 
 ## GPT Lite 테스트
 
@@ -224,7 +258,7 @@ Repo-local skills를 사용하는 프로젝트에서는 필요에 따라 해당 
 
 ---
 
-# 6. 이 배포판이 설치 후 하지 않는 것
+# 7. 이 배포판이 설치 후 하지 않는 것
 
 스킬 설치 자체가 다음 기능을 새로 추가하는 것은 아닙니다.
 
@@ -240,18 +274,19 @@ Repo-local skills를 사용하는 프로젝트에서는 필요에 따라 해당 
 
 ---
 
-# 7. 업데이트
+# 8. 업데이트
 
 새 버전으로 갱신할 때:
 
 - **ChatGPT Plugin ZIP**: 새 ZIP으로 기존 plugin을 업데이트/교체합니다.
 - **ChatGPT Skill**: 새 canonical skill 폴더/파일로 업데이트합니다.
+- **GitHub marketplace**: `codex plugin marketplace upgrade` 또는 해당 marketplace 갱신 절차를 사용합니다.
 - **Gemini CLI**: 재설치 후 `/skills reload`를 실행합니다.
-- **Codex**: 설치된 skill/plugin을 새 버전으로 교체하고 필요하면 세션을 다시 시작합니다.
+- **Codex skill-only**: 설치된 skill을 새 버전으로 교체하고 필요하면 세션을 다시 시작합니다.
 
 ---
 
-# 8. 제거
+# 9. 제거
 
 ## Gemini CLI
 
@@ -263,13 +298,13 @@ gemini skills uninstall long-image-ocr-gemini-lite
 
 Plugins 또는 Skills 화면에서 설치된 항목을 제거합니다.
 
-## Codex
+## Codex / marketplace
 
-사용 중인 skill/plugin installer의 제거 절차를 사용하거나 설치된 skill directory를 제거합니다.
+설치된 plugin을 제거하거나 marketplace 자체를 제거하려면 지원되는 Codex plugin 관리 명령을 사용합니다.
 
 ---
 
-# 9. Compatibility note
+# 10. Compatibility note
 
 v0.1.0 사용자를 위해 다음 legacy 경로는 v0.1.x 동안 유지합니다.
 
