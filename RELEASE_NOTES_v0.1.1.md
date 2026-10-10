@@ -26,6 +26,18 @@ dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
 
 The ZIP contains `plugin.json` at archive root and the GPT Lite skill under `skills/`, so eligible ChatGPT plugin upload flows do not need manual repackaging.
 
+A repo marketplace is also included:
+
+```text
+.agents/plugins/marketplace.json
+```
+
+Supported Codex/ChatGPT Desktop environments can add the repository as a marketplace source:
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+```
+
 ### Gemini CLI
 
 The canonical Gemini skill is available at:
