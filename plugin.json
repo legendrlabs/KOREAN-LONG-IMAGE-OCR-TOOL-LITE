@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "korean-long-image-ocr-tool-lite",
+  "version": "0.1.1",
+  "description": "Portable Agent Skills package for reliable long-image and multi-screenshot OCR/restoration workflows on GPT and Gemini hosts."
+}
