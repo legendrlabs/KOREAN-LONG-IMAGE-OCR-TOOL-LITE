@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project uses semantic versioning where practical.
 
+## [0.1.2] - 2026-10-11
+
+### Added
+
+- Direct Gemini Markdown distribution: `dist/long-image-ocr-gemini-lite.md`.
+- Copy-paste installer prompt: `dist/GEMINI_INSTALL_PROMPT.txt`.
+
+### Changed
+
+- Gemini installation guidance now prioritizes direct Markdown / `SKILL.md` registration when the current host exposes a skill-registration flow.
+- Gemini CLI Git/`.skill` installation remains as a fallback and compatibility path.
+- GPT installation artifacts and guidance are intentionally unchanged because the GPT/ChatGPT Work path is already working in testing.
+
+### Fixed
+
+- Reduced host confusion where the Gemini skill repository was misread as an executable OCR application requiring `npm`, `pip`, `GEMINI_API_KEY`, custom servers, or local OCR scripts.
+- Clarified the difference between persistent skill installation and temporarily loading the Markdown instructions into the current conversation.
+
 ## [0.1.1] - 2026-10-11
 
 ### Added
