@@ -15,6 +15,17 @@ Current repository version: **v0.1.6**
 | Gemini 계열 | `long-image-ocr-gemini-lite` | **단일 Markdown 직접 등록 우선** |
 | Gemini CLI | `long-image-ocr-gemini-lite` | Markdown/Git/`.skill` 중 지원 경로 |
 
+Canonical skill paths:
+
+```text
+skills/long-image-ocr-gpt-lite/SKILL.md
+skills/long-image-ocr-gemini-lite/SKILL.md
+```
+
+Gemini direct-distribution file: `dist/long-image-ocr-gemini-lite.md`
+
+---
+
 ## 2. Gemini — Markdown 직접 등록 우선
 
 ```text
@@ -35,12 +46,26 @@ long-image-ocr-gemini-lite
 dist/GEMINI_INSTALL_PROMPT.txt
 ```
 
-영구 Skill registry가 없고 파일 읽기만 가능한 환경은 “현재 대화에 지침을 로드한 상태”이지 영구 설치 상태가 아닙니다.
+현재 환경에 Agent Skill 생성, `SKILL.md` 업로드, Markdown에서 Skill 생성, 사용자/워크스페이스 Skill 등록 기능이 있으면 이 방식을 우선합니다.
+
+- **영구 Skill registry가 있음** → `long-image-ocr-gemini-lite`로 등록
+- **파일 읽기만 가능하고 Skill registry가 없음** → 현재 대화에 지침을 로드한 상태일 뿐 영구 설치가 아님
+- **Gemini CLI 사용 가능** → 아래 fallback 사용
+
+저장소를 `npm`/`pip`, `GEMINI_API_KEY`, EasyOCR/Tesseract 서버, MCP/Cloud Run OCR 서비스, 이미지 분할 실행기로 재해석하지 않습니다.
 
 ## 3. Gemini CLI fallback
 
+사용자 전체:
+
 ```bash
 gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope user
+```
+
+현재 workspace:
+
+```bash
+gemini skills install https://github.com/legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE.git --path skills/long-image-ocr-gemini-lite --scope workspace
 ```
 
 Current package:
@@ -49,7 +74,20 @@ Current package:
 dist/long-image-ocr-gemini-lite-v0.1.6.skill
 ```
 
-설치 후 `/skills reload` 및 `/skills list`로 확인합니다.
+설치 예:
+
+```bash
+gemini skills install ./long-image-ocr-gemini-lite-v0.1.6.skill --scope user
+```
+
+설치 후:
+
+```text
+/skills reload
+/skills list
+```
+
+`long-image-ocr-gemini-lite`가 보이는지 확인합니다.
 
 ## 4. v0.1.6 동작 확인
 
@@ -88,18 +126,62 @@ python tests/evaluate_golden_fixture.py \
   candidate.json
 ```
 
-## 6. ChatGPT / Codex
+---
 
-GPT 쪽은 v0.1.6에서도 변경하지 않습니다.
+## 6. ChatGPT 웹 / 앱
+
+GPT Lite plugin ZIP과 canonical skill은 v0.1.1에서 그대로 유지합니다.
 
 ```text
 dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
 skills/long-image-ocr-gpt-lite/SKILL.md
 ```
 
-## 7. 업데이트
+현재 ChatGPT Work 테스트 운용 중인 GPT skill 본문은 v0.1.6에서 수정하지 않았습니다.
+
+---
+
+## 7. ChatGPT Desktop / Codex marketplace
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+codex plugin marketplace list
+```
+
+지원 환경에서 **Legendr Labs OCR Tools** source의 `korean-long-image-ocr-tool-lite`를 설치합니다. GPT OCR 작업에는 `long-image-ocr-gpt-lite`가 선택되어야 합니다.
+
+---
+
+## 8. 이 스킬이 새로 만들어주지 않는 기능
+
+스킬 설치 자체가 Drive 원본 접근 권한, 모델 vision 기능, OCR 엔진, 인터넷/connector 권한, 백그라운드 실행 기능을 새로 만들지는 않습니다. 스킬은 호스트에 이미 존재하는 기능을 어떻게 사용하고 근거·누락·식별자·행 검증·재판독 provenance·산술검산·완료 상태를 어떻게 관리할지 정의합니다.
+
+---
+
+## 9. 업데이트
 
 - Gemini Markdown: `dist/long-image-ocr-gemini-lite.md`로 교체
 - Gemini CLI Git install: update/reinstall 후 `/skills reload`
 - Gemini `.skill`: `dist/long-image-ocr-gemini-lite-v0.1.6.skill` 사용
 - GPT: 기존 v0.1.1 설치 유지
+
+
+---
+
+## 10. Compatibility
+
+v0.1.x 호환을 위해 legacy 경로와 이전 패키지도 유지합니다.
+
+```text
+long-image-ocr-gpt-lite/
+long-image-ocr-gemini-lite/
+skills/long-image-ocr-gpt-lite/
+skills/long-image-ocr-gemini-lite/
+dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
+dist/long-image-ocr-gemini-lite-v0.1.1.skill
+dist/long-image-ocr-gemini-lite-v0.1.3.skill
+dist/long-image-ocr-gemini-lite-v0.1.4.skill
+dist/long-image-ocr-gemini-lite-v0.1.5.skill
+```
+
+Gemini 신규 설치는 `dist/long-image-ocr-gemini-lite.md` 또는 `dist/long-image-ocr-gemini-lite-v0.1.6.skill`을 우선합니다.

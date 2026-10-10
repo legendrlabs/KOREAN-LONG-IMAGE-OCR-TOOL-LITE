@@ -45,6 +45,32 @@ dist/LongImageOCR-GPT-Lite-v0.1.1-plugin.zip
 skills/long-image-ocr-gpt-lite/SKILL.md
 ```
 
+
+## Installation and host notes
+
+Gemini direct install uses the single Markdown artifact and the persistent skill name `long-image-ocr-gemini-lite`. The copy/paste host request is in `dist/GEMINI_INSTALL_PROMPT.txt`.
+
+A host that can only read the Markdown in the current conversation must not describe that state as a persistent installation. If Gemini CLI is used, reload and inspect the registered skills after updating:
+
+```text
+/skills reload
+/skills list
+```
+
+Codex / ChatGPT Desktop marketplace remains available for the frozen GPT path:
+
+```bash
+codex plugin marketplace add legendrlabs/KOREAN-LONG-IMAGE-OCR-TOOL-LITE --ref main
+codex plugin marketplace list
+```
+
+## Included skills
+
+| Variant | Canonical path | Focus |
+|---|---|---|
+| GPT Lite | `skills/long-image-ocr-gpt-lite/SKILL.md` | 소배치, 진행률, 체크포인트, 중단 후 재개 |
+| Gemini Lite | `skills/long-image-ocr-gemini-lite/SKILL.md` | native vision, source coverage, literal identity, clean-room re-read, row atomicity, row-first/arithmetic validation |
+
 ## Gemini Lite v0.1.6 highlights
 
 ### 1. Literal Identity Lock
@@ -129,6 +155,7 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 │  ├─ long-image-ocr-gemini-lite-v0.1.1.skill
 │  ├─ long-image-ocr-gemini-lite-v0.1.3.skill
 │  ├─ long-image-ocr-gemini-lite-v0.1.4.skill
+│  ├─ long-image-ocr-gemini-lite-v0.1.5.skill
 │  ├─ long-image-ocr-gemini-lite-v0.1.6.skill
 │  ├─ long-image-ocr-gemini-lite.md
 │  └─ GEMINI_INSTALL_PROMPT.txt
@@ -141,6 +168,7 @@ KOREAN-LONG-IMAGE-OCR-TOOL-LITE/
 ├─ INSTALL.md
 ├─ CHANGELOG.md
 ├─ VERSION
+├─ RELEASE_NOTES_v0.1.5.md
 └─ RELEASE_NOTES_v0.1.6.md
 ```
 
@@ -159,3 +187,9 @@ GPT Lite additionally uses `IN_PROGRESS / INTERRUPTED_RESUMABLE` for long-runnin
 **v0.1.6 — Gemini clean-room re-read, row atomicity, and current-pass verification**
 
 GPT skill/package remains unchanged from v0.1.1 while GPT testing continues.
+
+See [`CHANGELOG.md`](./CHANGELOG.md) and [`RELEASE_NOTES_v0.1.6.md`](./RELEASE_NOTES_v0.1.6.md).
+
+## License
+
+MIT — see [`LICENSE`](./LICENSE).
