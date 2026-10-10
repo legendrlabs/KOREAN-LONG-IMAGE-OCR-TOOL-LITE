@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project uses semantic versioning where practical.
 
+## [0.1.4] - 2026-10-11
+
+### Added
+
+- **Literal Identity Lock** for tickers, company names, fund/product/account names, identifiers, codes, and other proper nouns.
+- Confidence discipline: blurry/ambiguous identities may not be labeled high-confidence merely because a familiar interpretation is plausible.
+- **Arithmetic Consistency Gate** for source fields with explicit numeric relationships such as assets, principal, P&L, return, and subtotals.
+- Regression cases covering `QQQI / GPIQ / ROCQ` identity preservation and the `62,966,337 / 65,578,190 / -2,611,853` financial consistency example.
+
+### Changed
+
+- Domain knowledge may trigger reinspection but may not replace visible glyphs with a more familiar security/company/product.
+- Material arithmetic mismatches now block verification until the source is reinspected or the fields remain explicitly ambiguous/unreadable.
+- Completion status must be downgraded when material identity or arithmetic conflicts remain unresolved.
+
+### Fixed
+
+- Prevented semantic autocorrection such as `QQQI → QQQ`, `GPIQ → UPRO`, and `ROCQ → RDVY` without visual evidence.
+- Prevented unsupported reconciliation stories such as fees, expenses, taxes, rounding, FX effects, settlement timing, or `제비용` from being used to explain away a mismatch.
+- Prevented contradictory numeric readings from being marked verified merely because a plausible narrative can be invented.
+
+### Distribution
+
+- Updated canonical Gemini skill: `skills/long-image-ocr-gemini-lite/SKILL.md`.
+- Updated direct Markdown artifact: `dist/long-image-ocr-gemini-lite.md`.
+- Added current Gemini CLI package: `dist/long-image-ocr-gemini-lite-v0.1.4.skill`.
+- Kept GPT/ChatGPT Work skill and v0.1.1 GPT plugin ZIP unchanged.
+
 ## [0.1.3] - 2026-10-11
 
 ### Changed
